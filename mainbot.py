@@ -1,0 +1,113 @@
+import streamlit as st
+import os
+from langchain_groq import ChatGroq
+from langchain_core.prompts import PromptTemplate
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.chains import RetrievalQA
+from langchain_community.vectorstores import FAISS
+
+DB_FAISS_PATH="vectorstore/db_faiss"
+@st.cache_resource
+def get_vs():
+ embedding_model=HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+ db=FAISS.load_local(DB_FAISS_PATH,embedding_model,allow_dangerous_deserialization=True)
+ return db
+
+
+def format_sources(sources):
+    formatted = ""
+    for i, doc in enumerate(sources):
+        metadata = doc.metadata
+        source = metadata.get('source', 'Unknown Source')
+        page = metadata.get('page', 'N/A')
+        content = doc.page_content.strip().replace("\n", " ")
+        formatted += f"\n **Source {i+1}:** `{source}` (Page {page})\n> {content[:300]}..."  # Truncate for display
+    return formatted
+
+
+def set_custom_prompt(custom_prompt_template):
+    prompt=PromptTemplate(template=custom_prompt_template,input_variables=["context","question"])
+    return prompt
+
+
+def load_llm(GROQ_API_KEY):
+    llm= ChatGroq(
+        model_name="meta-llama/llama-4-maverick-17b-128e-instruct",
+        temperature=0.0,
+        max_tokens=1000,
+        groq_api_key=GROQ_API_KEY
+    )
+    return llm
+
+
+
+def main():
+    st.title(" RAG-Mediva")
+    st.write("Welcome to the medical assistant! Ask anything medical-related.")
+
+    if'messages' not in st.session_state:
+        st.session_state.messages=[]
+    for message in st.session_state.messages:
+        st.chat_message(message['role']).markdown(message['content'])
+    
+    prompt = st.chat_input("Pass your prompt here:")
+
+    
+    if prompt:
+        st.chat_message("user").markdown(prompt)
+        st.session_state.messages.append({'role': 'user', 'content': prompt})
+        custom_prompt_template="""use the pieces of information provided in the context to answer the user question. If you dont know the anasawr jsut say that you dont know dont try to make up an answer.Dont provide anything out of the given context
+
+         Context:{context}
+         Question:{question}
+
+        Start answer directly no small talk please.
+          """
+        from dotenv import load_dotenv
+        load_dotenv()
+
+        GROQ_API_KEY=os.environ.get("GROQ_API_KEY")
+    
+
+        try:
+            vectorstore=get_vs()
+            if vectorstore is None:
+                st.error("FAILED TO LOAD")
+            
+            qa_chain=RetrievalQA.from_chain_type(
+            llm=ChatGroq(
+                    model_name="meta-llama/llama-4-maverick-17b-128e-instruct",  # free, fast Groq-hosted model
+                    temperature=0.0,
+                    groq_api_key=os.environ["GROQ_API_KEY"],
+                ),
+            chain_type="stuff",
+            retriever=vectorstore.as_retriever(search_kwargs={'k':3}),
+            return_source_documents=True,
+            chain_type_kwargs={'prompt':set_custom_prompt(custom_prompt_template)}
+)
+            response=qa_chain.invoke({'query':prompt})
+
+            result=response["result"]
+            sources = format_sources(response["source_documents"])
+
+            result_to_show=result+"\nSource Docs:\n"+str(sources)
+
+    
+
+        
+
+
+
+
+
+           #response = "Hello! I am Mediva "
+            st.chat_message("assistant").markdown(result_to_show)
+            st.session_state.messages.append({'role': 'assistant', 'content': result_to_show})\
+        
+        except Exception as e:
+            st.error(f"ERROR:{str(e)}")
+
+
+
+if __name__ == "__main__":
+    main()
