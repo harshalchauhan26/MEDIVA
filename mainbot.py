@@ -130,7 +130,7 @@ def main():
     """, unsafe_allow_html=True)
 
     st.markdown("<div class='main-title'>MEDIVA: Medical RAG Chatbot</div>", unsafe_allow_html=True)
-    st.markdown("<div class='sub-text'>Ask questions based on your medical documents with enhanced contextual understanding.</div>", unsafe_allow_html=True)
+   
 
     if 'messages' not in st.session_state:
         st.session_state.messages = []
