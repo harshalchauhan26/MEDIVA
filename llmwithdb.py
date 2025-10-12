@@ -8,11 +8,20 @@ from langchain import hub
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 
+
+# The key is retrieved from the environment variable named 'MEDIVA_API_KEY'
+GROQ_API_KEY= os.environ.get("MEDIVA_API_KEY") 
+
+if api_key is None:
+    print("Error: MEDIVA_API_KEY environment variable is not set.")
+    # Stop execution or handle the error
+    exit(1)
+
 from dotenv import load_dotenv
 load_dotenv()
 
 # Step 1: Setup Groq LLM
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+#GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 GROQ_MODEL_NAME = "llama-3.1-8b-instant"  # Change to any supported Groq model
 
 
