@@ -1,0 +1,27 @@
+# Core
+python-dotenv
+streamlit
+
+# LangChain & Integrations
+langchain
+langchain-community
+langchain-core
+langchain-groq
+langchain-huggingface
+
+# Embeddings and Vector Store
+sentence-transformers
+faiss-cpu
+
+# PDF and Data Handling
+pypdf
+numpy
+pandas
+
+# Environment and Utilities
+tqdm
+requests
+
+# Optional: If you’re using scikit-learn or visualization
+scikit-learn
+matplotlib

@@ -1,0 +1,11 @@
+# Python environment and dependencies
+.env
+__pycache__/
+*.pyc
+
+# Sensitive data and configuration
+# This is where your keys/secrets are likely stored
+# If your database stores secrets, you might consider this too, but
+# generally, you only exclude the file that holds the credentials.
+database.py # <--- ONLY IF IT CONTAINS HARDCODED SENSITIVE SECRETS
+.env
