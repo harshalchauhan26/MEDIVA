@@ -8,6 +8,7 @@ langchain-community
 langchain-core
 langchain-groq
 langchain-huggingface
+langchainhub
 
 # Embeddings and Vector Store
 sentence-transformers
