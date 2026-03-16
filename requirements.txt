@@ -1,17 +1,15 @@
 # Core
+
 python-dotenv
 streamlit
-
-# LangChain & Integrations
-langchain==0.3.25
-langchain-community==0.3.23
-langchain-core==0.3.58
-langchain-groq==0.3.2
-langchain-huggingface==0.1.2
-langchain-text-splitters==0.3.8
-# Embeddings and Vector Store
-sentence-transformers==3.4.1
+langchain
+langchain-community
+langchain-core
+langchain-groq
+langchain-huggingface
+sentence-transformers
 faiss-cpu
+pypdf
 
 # PDF and Data Handling
 pypdf
