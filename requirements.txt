@@ -9,7 +9,7 @@ langchain-core
 langchain-groq
 langchain-huggingface
 langchainhub
-
+langchainhub
 # Embeddings and Vector Store
 sentence-transformers
 faiss-cpu
