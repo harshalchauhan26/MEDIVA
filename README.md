@@ -1,3 +1,5 @@
+WORKING LINK ::: https://mediva-ljuazes2b2kdeyrwajekwq.streamlit.app/
+
 
 # MEDIVA - A Medical RAG Chatbot
 **MEDIVA** (Medical Intelligent Virtual Assistant) is a lightweight and modern Retrieval-Augmented Generation (RAG) chatbot designed to assist with medical knowledge and inquiries using custom PDF documents. It leverages powerful embedding models and LLMs for accurate, document-grounded responses.
