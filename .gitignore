@@ -2,6 +2,8 @@
 .env
 __pycache__/
 *.pyc
+.venv/
+venv/
 
 # Sensitive data and configuration
 # This is where your keys/secrets are likely stored
@@ -9,3 +11,8 @@ __pycache__/
 # generally, you only exclude the file that holds the credentials.
 database.py # <--- ONLY IF IT CONTAINS HARDCODED SENSITIVE SECRETS
 .env
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env

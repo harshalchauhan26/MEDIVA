@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+}
+
+.card {
+  @apply rounded-2xl border border-slate-200 bg-white shadow-card;
+}
+
+/* Cards that respond to hover (links, clickable tiles) */
+.card-interactive {
+  @apply card transition duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-card-hover;
+}
+
+/* Loading skeleton */
+.skeleton {
+  @apply relative overflow-hidden rounded-lg bg-slate-200/70;
+}
+.skeleton::after {
+  content: "";
+  @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/60 to-transparent;
+  animation: shimmer 1.5s infinite;
+}
+
+.btn-primary {
+  @apply inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.input {
+  @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100;
+}
+
+/* Status badges */
+.badge {
+  @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+}
+.badge-green {
+  @apply bg-brand-50 text-brand-700;
+}
+.badge-amber {
+  @apply bg-amber-50 text-amber-700;
+}
+.badge-red {
+  @apply bg-red-50 text-red-700;
+}
+.badge-slate {
+  @apply bg-slate-100 text-slate-600;
+}
+
+/* Sidebar nav link */
+.nav-link {
+  @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-500 transition hover:bg-slate-50 hover:text-slate-900;
+}
+.nav-link-active {
+  @apply bg-brand-50 text-brand-700 hover:bg-brand-50 hover:text-brand-700;
+}
+
+/* Modal */
+.modal-backdrop {
+  @apply fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm;
+}

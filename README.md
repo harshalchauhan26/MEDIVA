@@ -1,73 +1,123 @@
-WORKING LINK ::: https://mediva-ljuazes2b2kdeyrwajekwq.streamlit.app/
+# MEDIVA
 
+> **New:** the full healthcare platform (medicine inventory, appointment booking, and
+> the MediVa tool-calling AI assistant) lives in [`webapp/`](webapp/README.md). It uses
+> the RAG service below as-is — see [`webapp/ARCHITECTURE.md`](webapp/ARCHITECTURE.md).
 
-# MEDIVA - A Medical RAG Chatbot
-**MEDIVA** (Medical Intelligent Virtual Assistant) is a lightweight and modern Retrieval-Augmented Generation (RAG) chatbot designed to assist with medical knowledge and inquiries using custom PDF documents. It leverages powerful embedding models and LLMs for accurate, document-grounded responses.
----
-## 🔍 Features
-- **RAG Pipeline**: Seamless integration of retrieval and generation.
-- **Custom PDF Uploads**: Ask questions based on your own medical documents.
-- **Fast Inference**: Powered by GROQ and Langchain for blazing-fast results.
-- **Simple UI**: Built with Streamlit, keeping it elegant and responsive.
-- **Context-Aware**: Understands medical questions within the scope of provided documents.
----
-## 🧠 How It Works
-1. **PDF Loader**: Upload medical PDFs (research, notes, articles).
-2. **Text Splitter**: Chunks the document into meaningful segments.
-3. **Embeddings**: Converts chunks into vector form using HuggingFace embeddings.
-4. **Vector Store (FAISS)**: Stores and indexes embeddings for fast retrieval.
-5. **Query**: Ask a medical question.
-6. **LLM (GROQ)**: Retrieves context chunks and generates a natural language response.
----
-## 🚀 Setup Instructions
-### 1. Clone the repository
-```bash
-git clone https://github.com/yourusername/mediva.git
-cd mediva
+MEDIVA is a medical Retrieval-Augmented Generation chatbot. The project has been migrated from a Streamlit-only app to a deployable React + Tailwind frontend and FastAPI backend.
+
+The frontend is designed for Vercel. The backend is designed for Render and keeps the existing LangChain, Groq, HuggingFace embeddings, and FAISS vectorstore workflow.
+
+## Project Structure
+
+```text
+MEDIVA/
+├── api/
+│   └── main.py                 # FastAPI RAG API for Render
+├── frontend/
+│   ├── src/
+│   │   ├── main.jsx            # React chat UI
+│   │   └── styles.css          # Tailwind entry
+│   ├── package.json
+│   └── tailwind.config.js
+├── vectorstore/db_faiss/       # Existing FAISS index
+├── data/                       # Source PDF documents
+├── database.py                 # Rebuilds the FAISS vectorstore
+├── render.yaml                 # Render deploy blueprint
+├── vercel.json                 # Vercel frontend config
+└── requirements.txt            # Backend dependencies
 ```
-### 2. Create a virtual environment
+
+## Local Development
+
+### Backend
+
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-### 3. Install dependencies
-```bash
+venv\Scripts\activate
 pip install -r requirements.txt
+copy .env.example .env
+uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
 ```
-### 4. Set your API keys
-Create a `.env` file:
+
+Set `GROQ_API_KEY` in `.env` before asking questions.
+
+### Frontend
+
 ```bash
-GROQ_API_KEY=your_groq_api_key_here
+cd frontend
+npm install
+copy .env.example .env
+npm run dev
 ```
-*(Optional if you are using other keys like OPENAI or local LLMs)*
-### 5. Run the Streamlit App
+
+Open the Vite URL, usually `http://localhost:5173`.
+
+## API
+
+Health check:
+
 ```bash
-streamlit run mainbot.py
+GET /health
 ```
----
-## 📁 Folder Structure
+
+Chat:
+
+```bash
+POST /api/chat
+Content-Type: application/json
+
+{
+  "message": "What are common symptoms of anemia?"
+}
 ```
-mediva/
-├── mainbot.py              # Main Streamlit app
-├── database.py             # Handles embeddings and FAISS vector store
-├── requirements.txt        # Python dependencies
-├── README.md               # Project documentation
-└── .env                    # API keys and environment variables
+
+Response:
+
+```json
+{
+  "answer": "Generated answer from the medical documents.",
+  "sources": [
+    {
+      "page": 12,
+      "source": "The_GALE_ENCYCLOPEDIA_of_MEDICINE_SECOND.pdf",
+      "preview": "Retrieved source text..."
+    }
+  ]
+}
 ```
----
-## 🏥 Use Cases
-- Medical research assistants
-- Educational tools for students
-- Reference chatbot for healthcare workers
-- Custom document querying (journal articles, reports, books)
----
-## 📌 Future Improvements
-- UI refinement with responsive design
-- Multi-PDF support
-- Caching and optimization
-- User authentication
-- Advanced analytics and visual explanations
----
-## 📫 Contributing
-Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
----![Uploading image.png…]()
+
+## Deploy Backend To Render
+
+1. Push this repository to GitHub.
+2. In Render, create a new Blueprint or Web Service from the repo.
+3. Use `render.yaml`, or configure manually:
+   - Build command: `pip install -r requirements.txt`
+   - Start command: `uvicorn api.main:app --host 0.0.0.0 --port $PORT`
+4. Add environment variables:
+   - `GROQ_API_KEY`
+   - `FRONTEND_ORIGINS=https://your-vercel-domain.vercel.app`
+   - Optional: `GROQ_MODEL_NAME`, `GROQ_TEMPERATURE`, `GROQ_MAX_TOKENS`
+
+Render must include the committed `vectorstore/db_faiss` files, or you must rebuild them before deployment with:
+
+```bash
+python database.py
+```
+
+## Deploy Frontend To Vercel
+
+1. Import the same GitHub repository into Vercel.
+2. Vercel will use `vercel.json`:
+   - Install command: `cd frontend && npm install`
+   - Build command: `cd frontend && npm run build`
+   - Output directory: `frontend/dist`
+3. Add this environment variable:
+   - `VITE_API_URL=https://your-render-service.onrender.com`
+4. Redeploy after changing `VITE_API_URL`.
+
+## Notes
+
+- The old Streamlit app remains in `mainbot.py` as a legacy reference.
+- The frontend calls only the FastAPI backend. It does not expose the Groq API key.
+- MEDIVA is a reference and learning tool, not a replacement for professional medical advice.

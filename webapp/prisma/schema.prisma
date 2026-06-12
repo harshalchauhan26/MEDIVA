@@ -1,0 +1,148 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+enum Role {
+  PATIENT
+  DOCTOR
+  PHARMACIST
+  ADMIN
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum DoctorStatus {
+  AVAILABLE
+  IN_SESSION
+  ON_LEAVE
+}
+
+enum ReservationStatus {
+  PENDING
+  PICKED_UP
+  CANCELLED
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  passwordHash String? // null for Google-authenticated users
+  name         String
+  phone        String? // E.164, used for WhatsApp messages
+  image        String? // Google avatar URL
+  role         Role          @default(PATIENT)
+  createdAt    DateTime      @default(now())
+  doctor       Doctor?
+  appointments Appointment[] @relation("PatientAppointments")
+  reservations Reservation[]
+}
+
+model Doctor {
+  id           String              @id @default(cuid())
+  userId       String              @unique
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialty    String
+  bio          String
+  rating       Float               @default(4.5)
+  status       DoctorStatus        @default(AVAILABLE)
+  availability AvailabilityBlock[]
+  appointments Appointment[]
+}
+
+// Recurring weekly availability, e.g. Mon 09:00-13:00 in 30-minute slots.
+model AvailabilityBlock {
+  id           String @id @default(cuid())
+  doctorId     String
+  doctor       Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  dayOfWeek    Int // 0 = Sunday ... 6 = Saturday
+  startMinutes Int // minutes from midnight
+  endMinutes   Int
+  slotMinutes  Int    @default(30)
+
+  @@index([doctorId, dayOfWeek])
+}
+
+model Appointment {
+  id        String            @id @default(cuid())
+  patientId String
+  patient   User              @relation("PatientAppointments", fields: [patientId], references: [id])
+  doctorId  String
+  doctor    Doctor            @relation(fields: [doctorId], references: [id])
+  startsAt  DateTime
+  endsAt    DateTime
+  status    AppointmentStatus @default(PENDING)
+  symptoms  String
+  createdAt DateTime          @default(now())
+
+  @@unique([doctorId, startsAt])
+  @@index([patientId])
+}
+
+model Medicine {
+  id            String        @id @default(cuid())
+  name          String
+  genericName   String
+  sku           String        @unique
+  batchNumber   String
+  dosage        String
+  quantity      Int
+  price         Decimal       @db.Decimal(10, 2)
+  locationShelf String
+  expiryDate    DateTime
+  updatedAt     DateTime      @updatedAt
+  reservations  Reservation[]
+
+  @@index([name])
+}
+
+model Reservation {
+  id         String            @id @default(cuid())
+  medicineId String
+  medicine   Medicine          @relation(fields: [medicineId], references: [id])
+  userId     String
+  user       User              @relation(fields: [userId], references: [id])
+  quantity   Int
+  status     ReservationStatus @default(PENDING)
+  createdAt  DateTime          @default(now())
+}
+
+// Feedback collected from real users during evaluation. Captured from the
+// floating feedback widget; optionally tied to a logged-in user and the page
+// they were on. Reviewed by admins.
+model Feedback {
+  id        String   @id @default(cuid())
+  rating    Int // 1..5 quick sentiment
+  message   String
+  page      String? // pathname the user was on
+  email     String? // contact, if the user left one
+  userId    String? // set when the rater is logged in
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+// pgvector home for the RAG pipeline (chunks + embeddings).
+// The live RAG today is the FAISS index served by the FastAPI service;
+// this table lets future ingestion move embeddings into Postgres
+// without changing that service. all-MiniLM-L6-v2 => 384 dims.
+model MedicalDocument {
+  id        String                       @id @default(cuid())
+  source    String
+  page      Int?
+  content   String
+  metadata  Json                         @default("{}")
+  embedding Unsupported("vector(384)")?
+  createdAt DateTime                     @default(now())
+}

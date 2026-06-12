@@ -1,0 +1,16 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: mediva-postgres
+    environment:
+      POSTGRES_USER: mediva
+      POSTGRES_PASSWORD: mediva
+      POSTGRES_DB: mediva
+    ports:
+      # Host port 5433 because 5432 is occupied (WSL Postgres via wslrelay)
+      - "5433:5432"
+    volumes:
+      - mediva_pgdata:/var/lib/postgresql/data
+
+volumes:
+  mediva_pgdata:
