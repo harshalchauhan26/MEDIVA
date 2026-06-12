@@ -8,6 +8,7 @@ import {
   Boxes,
   CalendarDays,
   HeartPulse,
+  Home,
   LayoutDashboard,
   LifeBuoy,
   LogOut,
@@ -26,7 +27,7 @@ type NavItem = { href: string; label: string; icon: typeof LayoutDashboard };
 
 function navFor(role: Session["role"]): NavItem[] {
   const items: NavItem[] = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/dashboard", label: "Home", icon: Home },
     { href: "/pharmacy", label: "Pharmacy Stock", icon: Pill },
     { href: "/doctors", label: "Appointments", icon: CalendarDays },
   ];
@@ -41,7 +42,7 @@ function navFor(role: Session["role"]): NavItem[] {
 }
 
 const TITLES: Record<string, string> = {
-  "/dashboard": "Dashboard",
+  "/dashboard": "Home",
   "/pharmacy": "Pharmacy Inventory",
   "/doctors": "Appointment Booking",
   "/doctor/dashboard": "My Schedule",
@@ -49,6 +50,8 @@ const TITLES: Record<string, string> = {
   "/admin/feedback": "User Feedback",
   "/chat": "MediVa AI Assistant",
   "/roles": "Role Switcher",
+  "/settings": "Settings",
+  "/support": "Support",
 };
 
 function GuestHeader() {
@@ -137,12 +140,20 @@ export default function AppShell({
         <Link href="/chat" className="flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-3 py-2.5 text-sm font-medium text-white transition hover:bg-brand-700">
           <Bot className="h-4 w-4" /> MediVa AI · 24/7
         </Link>
-        <button className="nav-link w-full" type="button">
+        <Link
+          href="/settings"
+          onClick={() => setMobileOpen(false)}
+          className={`nav-link ${pathname === "/settings" ? "nav-link-active" : ""}`}
+        >
           <Settings className="h-4 w-4" /> Settings
-        </button>
-        <button className="nav-link w-full" type="button">
+        </Link>
+        <Link
+          href="/support"
+          onClick={() => setMobileOpen(false)}
+          className={`nav-link ${pathname === "/support" ? "nav-link-active" : ""}`}
+        >
           <LifeBuoy className="h-4 w-4" /> Support
-        </button>
+        </Link>
       </div>
 
       <div className="border-t border-slate-100 p-3">
